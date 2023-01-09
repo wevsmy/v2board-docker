@@ -1,23 +1,38 @@
-version: '3'
+version: '3.7'
+
 services:
-  www:
-    image: tokumeikoi/lcrp
-    volumes:
-      - './www:/www'
-      - './wwwlogs:/wwwlogs'
-      - './caddy.conf:/run/caddy/caddy.conf'
-      - './supervisord.conf:/run/supervisor/supervisord.conf'
-      - './crontabs.conf:/etc/crontabs/root'
-      - './.caddy:/root/.caddy'
-    ports:
-      - '80:80'
-      - '443:443'
+  v2board:
+    image: tokumeikoi/lcrp:latest
+    container_name: v2board
+    privileged: true
     restart: always
+    ports:
+      - 0.0.0.0:8089:80
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./www:/www
+      - ./wwwlogs:/wwwlogs
+      - ./conf/caddy.conf:/run/caddy/caddy.conf
+      - ./conf/supervisord.conf:/run/supervisor/supervisord.conf
+      - ./conf/crontabs.conf:/etc/crontabs/root
+      - ./conf/.caddy:/root/.caddy
+    networks:
+      - gateway
+
   mysql:
     image: mysql:5.7.29
-    volumes:
-      - './mysql:/var/lib/mysql'
+    container_name: mysql
     restart: always
-    environment: 
+    environment:
+      TZ: Asia/Shanghai
       MYSQL_ROOT_PASSWORD: v2boardisbest
       MYSQL_DATABASE: v2board
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      - gateway
+
+networks:
+  gateway:
+    external: true
